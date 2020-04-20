@@ -1,4 +1,5 @@
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCostAndGradient;
@@ -52,6 +53,12 @@ public class SentimentDemo {
 
         //this line is required, after creating POS tag map needs to annotate again
         ann = nlpUtils.annotate(text);
+
+        List<CoreLabel> words = ann.get(CoreAnnotations.TokensAnnotation.class);
+        for (CoreLabel word : words) {
+            System.out.println(word.toString() + " : " + word.getString(SentimentCoreAnnotations.SentimentClass.class));
+        }
+
 
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sent : sentences) {
