@@ -1,0 +1,13 @@
+CorefMaker.class
+DependencyParser.class
+OpenIEDemo.class
+CustomizedSentimentAnnotator.class
+SentimentDemo.class
+SubjectSentimentPair.class
+utils\models\ReferenceModel.class
+utils\NLPUtils.class
+ParseTreeSplitter.class
+SentimentAnalyser.class
+coreference.class
+utils\models\Triple.class
+TripleMaker.class
