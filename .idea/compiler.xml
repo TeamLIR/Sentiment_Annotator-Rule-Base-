@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="Sentiment_Annotator-Rule-Base-" />
         <module name="Sentiment_Analyser" />
       </profile>
     </annotationProcessing>
