@@ -18,23 +18,39 @@ public class Parser {
 
         //insert your sentence here
 
-        String targetSentence = "In 2008, federal officials received a tip from a confidential informant that Lee had sold the informant ecstasy and marijuana.";
+        String targetSentence = "During the plea process, Lee repeatedly asked his attorney whether he would face deportation; his attorney assured him that he would not be deported as a result of pleading guilty.";
         Annotation annotation = new Annotation(targetSentence);
         pipeline.annotate(annotation);
-        processParseTree(parseTree(annotation));
+        processParseTree(parseTree(annotation).toString());
 
     }
 
     //Just returns the string containing complete parse tree structure
-    public static String parseTree(Annotation ann) {
+    public static Tree parseTree(Annotation ann) {
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sentence : sentences) {
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-            return tree.toString();
+            return tree;
         }
         return null;
     }
 
+
+    public static List<String> extract_phrase(Tree tree, String label){
+        List<String> list=new ArrayList<String>();
+        List<Tree> subTreeList = tree.subTreeList();
+        for (Tree tree1 : subTreeList) {
+            if(tree1.label().value().equals(label)){
+                Tree t = tree1;
+
+                System.out.println(tree1);
+
+            }
+
+             }
+        return list;
+
+    }
     //returned parse tree processed in this method
     public static String[] processParseTree(String text) {
 
