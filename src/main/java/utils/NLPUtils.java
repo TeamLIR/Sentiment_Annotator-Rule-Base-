@@ -619,6 +619,9 @@ public class NLPUtils {
         Annotation annotation2 = new Annotation(sub);
         pipeline2.annotate(annotation2);
         String vp = extractVerbPhrase(parseTreeVP(annotation2));
+        vp = vp.replaceAll("\\(", "").replaceAll("\\)", "").
+                replaceAll("[A-Z$]+ ", "").replaceAll(" [\\.]", " ").
+                replaceAll(" [\\,]", "").trim() + ".";
         return vp;
     }
 
