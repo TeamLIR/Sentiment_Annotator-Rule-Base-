@@ -16,6 +16,7 @@ import utils.NLPUtils;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -204,11 +205,52 @@ public class ParseTreeSplitter {
 
         return null;
     }
+    public static float getmax(String[] sentimentList){
+        List<String> al = new ArrayList<String>();
+        al = Arrays.asList(sentimentList);
+        float max=0;
+        for (String i: sentimentList){
+            int index = al.indexOf(i);
+            if (index!=0){
+            float j= Float.parseFloat(i);
+            if (Float.parseFloat(i)>max){
+                max=Float.parseFloat(i);
+            }
+        }
+        }
+        return max;
+    }
 
+    public static List<String> getSentimentScore(CoreMap coreMapSentence) {
+        final Tree tree = coreMapSentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+        final SimpleMatrix sm = RNNCoreAnnotations.getPredictions(tree);
+        final String sentiment = coreMapSentence.get(SentimentCoreAnnotations.SentimentClass.class);
+
+        String[] sentimentList= sm.toString().split("\n");
+        List<String> list=new ArrayList<String>();
+        if (sentiment.equals("Negative") || sentiment.toLowerCase().equals("verynegative")) {
+            list.add(sentiment);
+            list.add(String.valueOf(getmax(sentimentList)));
+            return list;
+        }
+
+        //lowering threshold for negative
+        if (Double.parseDouble(sm.toString().split("\n")[2]) >= 0.4) {
+            list.add("Negative");
+            list.add(String.valueOf(Float.parseFloat(sentimentList[2])));
+            return list;
+
+        }
+        list.add("Non-negative");
+        list.add(String.valueOf(getmax(sentimentList)));
+
+
+        return  list;
+
+    }
     //to calculate sentiment
     public static String SentimentClassification(CoreMap coreMapSentence) {
         final Tree tree = coreMapSentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-        
         final SimpleMatrix sm = RNNCoreAnnotations.getPredictions(tree);
         final String sentiment = coreMapSentence.get(SentimentCoreAnnotations.SentimentClass.class);
 

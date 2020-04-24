@@ -571,11 +571,11 @@ public class NLPUtils {
         return triples;
     }
 
-    public String parseTree(Annotation ann) {
+    public static Tree parseTree(Annotation ann) {
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sentence : sentences) {
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-            return tree.toString();
+            return tree;
         }
         return null;
     }
@@ -606,7 +606,7 @@ public class NLPUtils {
             phraseList[count] = phrase;
             output.add(phrase);
 
-            //System.out.println(phrase);
+            System.out.println(phrase);
 
         }
         return output;
@@ -655,3 +655,32 @@ public class NLPUtils {
     }
 
 }
+
+//         String vp= extractVerbPrase(parseTree(annotation2));
+//         return vp;
+//     }
+
+//     public static String extractVerbPrase(Tree tree){
+//         List<String> list=new ArrayList<String>();
+//         List<Tree> subTreeList = tree.subTreeList();
+//         for (Tree tree1 : subTreeList) {
+//             System.out.println(tree1);
+//             if(tree1.label().value().equals("VP")){
+//                 // System.out.println(tree1);
+//                 List<Tree> list1=tree1.getLeaves();
+//                 String s ="";
+//                 for(Tree l: list1){
+//                     s= s+l.toString()+" ";
+//                 }
+//                 return s;
+
+
+//             }
+
+//         }
+//        return null;
+
+//     }
+
+// }
+

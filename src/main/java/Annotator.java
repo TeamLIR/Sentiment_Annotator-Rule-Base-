@@ -17,6 +17,16 @@ import java.util.Scanner;
 
 public class Annotator {
     public static String calculateSentiment(NLPUtils nlpUtils, String text){
+        try {
+            CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
+                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
+                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_negative_mini.csv",
+                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_neutral_mini.csv");
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         SentimentCostAndGradient.createPosTagMap();
 
         Annotation ann = nlpUtils.annotate(text);
@@ -36,7 +46,6 @@ public class Annotator {
 
 
     public static void main(String[] args) throws Exception {
-
         Scanner sc = new Scanner(System.in);  // Create a Scanner object
         System.out.println("Enter String");
 
@@ -58,14 +67,15 @@ public class Annotator {
         String party = sc.nextLine();  // Read user input
 
         Properties propsCoref = new Properties();
-        props.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
-        StanfordCoreNLP pipeline1 = new StanfordCoreNLP(props);
+       // props.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
+        propsCoref.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
+        StanfordCoreNLP pipeline1 = new StanfordCoreNLP(propsCoref);
 
         //insert your sentence here
 
         Annotation annotation = new Annotation(replaceSentenceWords);
         pipeline1.annotate(annotation);
-        List<String> subSentences= nlpUtils.processParseTree(nlpUtils.parseTree(annotation));
+        List<String> subSentences= nlpUtils.processParseTree(nlpUtils.parseTree(annotation).toString());
         String[] partylist = party.split(",");
        // System.out.println(partylist);
 
@@ -76,15 +86,7 @@ public class Annotator {
 //	    NLPUtils nlpUtils = new NLPUtils(props, "http://104.248.226.230", 9000);
         //customized server
         //NLPUtils nlpUtils = new NLPUtils(props, "http://142.93.243.74", 9000);
-        try {
-            CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
-                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
-                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_negative_mini.csv",
-                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_neutral_mini.csv");
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+
 
         for (String sub : subSentences) {
             String vp = nlpUtil.getVP(sub);
@@ -98,10 +100,29 @@ public class Annotator {
                     list.add(i);
                    }
             }
-            if (list.size()==1){
+            if (list.size()==0){
+
+            }
+            else if (list.size()==1){
                 System.out.println(sub);
                 String sentiment = calculateSentiment(nlpUtil,sub);
                 System.out.println(list.get(0) + " - "+ sentiment);
+            }
+            else if (list.size()==2){
+                String vp=nlpUtil.getVP(sub);
+
+                /*Properties prop = new Properties();
+                prop.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
+                StanfordCoreNLP pipeline2 = new StanfordCoreNLP(prop);
+                Annotation annotation2 = new Annotation(sub);*/
+                //pipeline2.annotate(annotation2);
+                //String vp= nlpUtils.extractVerbPrase(nlpUtils.parseTree(annotation2));
+                if (vp.contains(list.get(0))){
+                    String sentiment = calculateSentiment(nlpUtil,vp);
+                    System.out.println(list.get(0) + " - "+ sentiment);
+                    
+                }
+
             }
         }
 

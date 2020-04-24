@@ -1,4 +1,5 @@
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCostAndGradient;
@@ -37,9 +38,11 @@ public class SentimentDemo {
             e.printStackTrace();
         }
 
-        String sentence= "he was charged with a crime.";
+        String sentence= "he was interested with a doing that.";
 
         System.out.println(calculateSentiment(nlpUtils,sentence));
+
+        System.out.println(calculateSentimentScore(nlpUtils,sentence));
     }
 
     public static String calculateSentiment(NLPUtils nlpUtils, String text){
@@ -53,12 +56,38 @@ public class SentimentDemo {
         //this line is required, after creating POS tag map needs to annotate again
         ann = nlpUtils.annotate(text);
 
+        List<CoreLabel> words = ann.get(CoreAnnotations.TokensAnnotation.class);
+        for (CoreLabel word : words) {
+            System.out.println(word.toString() + " : " + word.getString(SentimentCoreAnnotations.SentimentClass.class));
+        }
+
+
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sent : sentences) {
             return ParseTreeSplitter.SentimentClassification(sent);
         }
         return null;
     }
+
+    public static List<String> calculateSentimentScore(NLPUtils nlpUtils, String text){
+        SentimentCostAndGradient.createPosTagMap();
+
+        Annotation ann = nlpUtils.annotate(text);
+
+        //to create the Pos tag map
+        CustomizedSentimentAnnotator.createPosTagMapForSentence(ann);
+
+        //this line is required, after creating POS tag map needs to annotate again
+        ann = nlpUtils.annotate(text);
+
+        List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sent : sentences) {
+            return ParseTreeSplitter.getSentimentScore(sent);
+        }
+        return null;
+    }
+
+
 
     public static String calculateSentimentOriginalModel (NLPUtils nlpUtils,String text){
         Annotation ann = nlpUtils.annotate(text);
