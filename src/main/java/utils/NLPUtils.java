@@ -580,6 +580,15 @@ public class NLPUtils {
         return null;
     }
 
+    public Tree parseTreeVP(Annotation ann) {
+        List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+            return tree;
+        }
+        return null;
+    }
+
     //returned parse tree processed in this method
     public List<String> processParseTree(String text) {
 
@@ -601,6 +610,48 @@ public class NLPUtils {
 
         }
         return output;
+    }
+
+    public String getVP(String sub) {
+        Properties prop = new Properties();
+        prop.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
+        StanfordCoreNLP pipeline2 = new StanfordCoreNLP(prop);
+        Annotation annotation2 = new Annotation(sub);
+        pipeline2.annotate(annotation2);
+        String vp = extractVerbPhrase(parseTreeVP(annotation2));
+        return vp;
+    }
+
+    public static String extractVerbPhrase(Tree tree){
+        List<Tree> subTreeList = tree.subTreeList();
+        for (Tree subTree : subTreeList) {
+            if(subTree.label().value().equals("S")){
+                List<Tree> list1 = subTree.getLeaves();
+                StringBuilder vp = new StringBuilder();
+                String subTree_S = subTree.toString();
+                ArrayList<Character> openedBracs = new ArrayList<>();
+                ArrayList<Character> closedBracs = new ArrayList<>();
+                for (int i =0; i < subTree_S.length(); i++){
+                    char c = subTree_S.charAt(i);
+                    if (Character.valueOf(c).equals('(')){
+                        openedBracs.add(c);
+                    }
+                    if (Character.valueOf(c).equals(')')){
+                        closedBracs.add(c);
+                    }
+
+                    if (openedBracs.size() == (closedBracs.size()+2) && Character.valueOf(subTree_S.charAt(i)).equals('(') && Character.valueOf(subTree_S.charAt(i+1)).equals('V') && Character.valueOf(subTree_S.charAt(i+2)).equals('P')){
+                        for (int j = i; j < subTree_S.length(); j++) {
+                            vp.append(subTree_S.charAt(j));
+                        }
+                        break;
+                    }
+                }
+                return vp.toString();
+            }
+        }
+        return null;
+
     }
 
 }

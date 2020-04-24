@@ -78,15 +78,17 @@ public class Annotator {
         //NLPUtils nlpUtils = new NLPUtils(props, "http://142.93.243.74", 9000);
         try {
             CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_negative_mini.csv",
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_neutral_mini.csv");
+                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
+                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_negative_mini.csv",
+                    "D:\\Academic\\FYP - SigmaLaw\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources" + "/DeviatedSentimentWords/non_neutral_mini.csv");
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
         for (String sub : subSentences) {
+            String vp = nlpUtil.getVP(sub);
+            System.out.println(vp);
             // Create the Stanford CoreNLP pipeline
             int sum = 0;
             List<String> list=new ArrayList<String>();
