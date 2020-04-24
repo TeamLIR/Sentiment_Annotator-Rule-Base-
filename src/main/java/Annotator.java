@@ -87,7 +87,10 @@ public class Annotator {
         //customized server
         //NLPUtils nlpUtils = new NLPUtils(props, "http://142.93.243.74", 9000);
 
+
         for (String sub : subSentences) {
+            String vp = nlpUtil.getVP(sub);
+            System.out.println(vp);
             // Create the Stanford CoreNLP pipeline
             int sum = 0;
             List<String> list=new ArrayList<String>();

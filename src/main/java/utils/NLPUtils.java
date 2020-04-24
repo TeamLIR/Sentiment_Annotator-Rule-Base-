@@ -580,6 +580,15 @@ public class NLPUtils {
         return null;
     }
 
+    public Tree parseTreeVP(Annotation ann) {
+        List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+            return tree;
+        }
+        return null;
+    }
+
     //returned parse tree processed in this method
     public List<String> processParseTree(String text) {
 
@@ -609,30 +618,69 @@ public class NLPUtils {
         StanfordCoreNLP pipeline2 = new StanfordCoreNLP(prop);
         Annotation annotation2 = new Annotation(sub);
         pipeline2.annotate(annotation2);
-        String vp= extractVerbPrase(parseTree(annotation2));
+        String vp = extractVerbPhrase(parseTreeVP(annotation2));
         return vp;
     }
 
-    public static String extractVerbPrase(Tree tree){
-        List<String> list=new ArrayList<String>();
+    public static String extractVerbPhrase(Tree tree){
         List<Tree> subTreeList = tree.subTreeList();
-        for (Tree tree1 : subTreeList) {
-            System.out.println(tree1);
-            if(tree1.label().value().equals("VP")){
-                // System.out.println(tree1);
-                List<Tree> list1=tree1.getLeaves();
-                String s ="";
-                for(Tree l: list1){
-                    s= s+l.toString()+" ";
+        for (Tree subTree : subTreeList) {
+            if(subTree.label().value().equals("S")){
+                List<Tree> list1 = subTree.getLeaves();
+                StringBuilder vp = new StringBuilder();
+                String subTree_S = subTree.toString();
+                ArrayList<Character> openedBracs = new ArrayList<>();
+                ArrayList<Character> closedBracs = new ArrayList<>();
+                for (int i =0; i < subTree_S.length(); i++){
+                    char c = subTree_S.charAt(i);
+                    if (Character.valueOf(c).equals('(')){
+                        openedBracs.add(c);
+                    }
+                    if (Character.valueOf(c).equals(')')){
+                        closedBracs.add(c);
+                    }
+
+                    if (openedBracs.size() == (closedBracs.size()+2) && Character.valueOf(subTree_S.charAt(i)).equals('(') && Character.valueOf(subTree_S.charAt(i+1)).equals('V') && Character.valueOf(subTree_S.charAt(i+2)).equals('P')){
+                        for (int j = i; j < subTree_S.length(); j++) {
+                            vp.append(subTree_S.charAt(j));
+                        }
+                        break;
+                    }
                 }
-                return s;
-
-
+                return vp.toString();
             }
-
         }
-       return null;
+        return null;
 
     }
 
 }
+
+//         String vp= extractVerbPrase(parseTree(annotation2));
+//         return vp;
+//     }
+
+//     public static String extractVerbPrase(Tree tree){
+//         List<String> list=new ArrayList<String>();
+//         List<Tree> subTreeList = tree.subTreeList();
+//         for (Tree tree1 : subTreeList) {
+//             System.out.println(tree1);
+//             if(tree1.label().value().equals("VP")){
+//                 // System.out.println(tree1);
+//                 List<Tree> list1=tree1.getLeaves();
+//                 String s ="";
+//                 for(Tree l: list1){
+//                     s= s+l.toString()+" ";
+//                 }
+//                 return s;
+
+
+//             }
+
+//         }
+//        return null;
+
+//     }
+
+// }
+
