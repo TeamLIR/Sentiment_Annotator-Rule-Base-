@@ -1,22 +1,32 @@
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
-import edu.stanford.nlp.coref.CorefCoreAnnotations;
-import edu.stanford.nlp.coref.data.CorefChain;
-import edu.stanford.nlp.coref.data.Mention;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.sentiment.SentimentCostAndGradient;
 import edu.stanford.nlp.util.CoreMap;
 import utils.NLPUtils;
-import java.util.Scanner;
 
 public class Annotator {
-    public static String calculateSentiment(NLPUtils nlpUtils, String text){
+    public static HashMap<String, ArrayList<ArrayList<String>> > sentimentmap = new HashMap<>();
+
+    public static void updateSentimentMap(String party,List<String> sentiment){
+        if (sentimentmap.keySet().contains(sentiment.get(0))){
+            ArrayList<ArrayList<String>> values= sentimentmap.get(sentiment.get(0));
+            values.add((ArrayList<String>) sentiment);
+            sentimentmap.put(party,values);
+
+        }
+        else {
+            ArrayList<ArrayList<String>> values = new ArrayList<>();
+            values.add((ArrayList<String>) sentiment);
+            sentimentmap.put(party,values);
+        }
+
+    }
+    public static List<String> calculateSentiment(NLPUtils nlpUtils, String text){
         try {
             CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
                     "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
@@ -39,10 +49,12 @@ public class Annotator {
 
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sent : sentences) {
-            return ParseTreeSplitter.SentimentClassification(sent);
+            return ParseTreeSplitter.getSentimentScore(sent);
+            //return ParseTreeSplitter.SentimentClassification(sent);
         }
         return null;
     }
+
 
 
     public static void main(String[] args) throws Exception {
@@ -88,6 +100,7 @@ public class Annotator {
         //NLPUtils nlpUtils = new NLPUtils(props, "http://142.93.243.74", 9000);
 
 
+
         for (String sub : subSentences) {
             String vp = nlpUtil.getVP(sub);
             System.out.println(vp);
@@ -105,11 +118,13 @@ public class Annotator {
             }
             else if (list.size()==1){
                 System.out.println(sub);
-                String sentiment = calculateSentiment(nlpUtil,sub);
+                List<String> sentiment = calculateSentiment(nlpUtil,sub);
+                updateSentimentMap(list.get(0),sentiment);
+
                 System.out.println(list.get(0) + " - "+ sentiment);
             }
             else if (list.size()==2){
-                String vp=nlpUtil.getVP(sub);
+                //String vp=nlpUtil.getVP(sub);
 
                 /*Properties prop = new Properties();
                 prop.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
@@ -118,14 +133,16 @@ public class Annotator {
                 //pipeline2.annotate(annotation2);
                 //String vp= nlpUtils.extractVerbPrase(nlpUtils.parseTree(annotation2));
                 if (vp.contains(list.get(0))){
-                    String sentiment = calculateSentiment(nlpUtil,vp);
+                    List<String> sentiment = calculateSentiment(nlpUtil,vp);
+                    updateSentimentMap(list.get(0),sentiment);
                     System.out.println(list.get(0) + " - "+ sentiment);
                     
                 }
 
             }
-        }
 
+        }
+        System.out.println(sentimentmap);
 
 
 
