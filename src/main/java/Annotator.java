@@ -13,8 +13,8 @@ public class Annotator {
     public static HashMap<String, ArrayList<ArrayList<String>> > sentimentmap = new HashMap<>();
 
     public static void updateSentimentMap(String party,List<String> sentiment){
-        if (sentimentmap.keySet().contains(sentiment.get(0))){
-            ArrayList<ArrayList<String>> values= sentimentmap.get(sentiment.get(0));
+        if (sentimentmap.keySet().contains(party)){
+            ArrayList<ArrayList<String>> values= sentimentmap.get(party);
             values.add((ArrayList<String>) sentiment);
             sentimentmap.put(party,values);
 
@@ -120,7 +120,6 @@ public class Annotator {
                 System.out.println(sub);
                 List<String> sentiment = calculateSentiment(nlpUtil,sub);
                 updateSentimentMap(list.get(0),sentiment);
-
                 System.out.println(list.get(0) + " - "+ sentiment);
             }
             else if (list.size()==2){
@@ -136,8 +135,23 @@ public class Annotator {
                     List<String> sentiment = calculateSentiment(nlpUtil,vp);
                     updateSentimentMap(list.get(0),sentiment);
                     System.out.println(list.get(0) + " - "+ sentiment);
+                    String otherSentiment ="";
+                    String score="";
+                    if (sentiment.get(0)=="Negative"){
+                        otherSentiment= "Non-negative";
+                        score =String.valueOf((1- Float.parseFloat(sentiment.get(1))));
+
+                    }
+                    else {
+                        otherSentiment = "Negative";
+                        score = String.valueOf((1- Float.parseFloat(sentiment.get(1))));
+                    }
+                    List<String> sentiment1 = Arrays.asList(new String[]{otherSentiment, score});
+                    updateSentimentMap(list.get(1),sentiment1);
+
                     
                 }
+
 
             }
 

@@ -603,8 +603,10 @@ public class NLPUtils {
             phrase = phrase.replaceAll("\\(", "").replaceAll("\\)", "").
                     replaceAll("[A-Z$]+ ", "").replaceAll(" [\\.]", " ").
                     replaceAll(" [\\,]", "").trim() + ".";
-            phraseList[count] = phrase;
-            output.add(phrase);
+            if (phrase.length()>1) {
+                phraseList[count] = phrase;
+                output.add(phrase);
+            }
 
             System.out.println(phrase);
 
