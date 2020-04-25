@@ -73,8 +73,8 @@ public class Annotator {
         System.out.println("Sentence -"+input);
 
         NLPUtils nlpUtils = new NLPUtils();
-        String replaceSentenceWords = nlpUtils.replaceCoreferences(document);
-        System.out.println("coref -"+replaceSentenceWords);
+        //String replaceSentenceWords = nlpUtils.replaceCoreferences(document);
+        //System.out.println("coref -"+replaceSentenceWords);
         System.out.println("Enter Parties");
         String party = sc.nextLine();  // Read user input
 
@@ -85,9 +85,12 @@ public class Annotator {
 
         //insert your sentence here
 
-        Annotation annotation = new Annotation(replaceSentenceWords);
+        Annotation annotation = new Annotation(input);
         pipeline1.annotate(annotation);
         List<String> subSentences= nlpUtils.processParseTree(nlpUtils.parseTree(annotation).toString());
+        for (String j: subSentences){
+            System.out.println(j);
+        }
         String[] partylist = party.split(",");
        // System.out.println(partylist);
 
@@ -108,7 +111,8 @@ public class Annotator {
             int sum = 0;
             List<String> list=new ArrayList<String>();
             for (String i : partylist) {
-                if (sub.toLowerCase().contains(i.trim().toLowerCase())) {
+                String member= i.trim().toLowerCase()+"'s";
+                if (sub.toLowerCase().contains(i.trim().toLowerCase()) | sub.toLowerCase().contains(member)) {
                     sum+=1;
                     list.add(i);
                    }
@@ -131,7 +135,7 @@ public class Annotator {
                 Annotation annotation2 = new Annotation(sub);*/
                 //pipeline2.annotate(annotation2);
                 //String vp= nlpUtils.extractVerbPrase(nlpUtils.parseTree(annotation2));
-                if (vp.contains(list.get(0))){
+                if (vp.toLowerCase().contains(list.get(0)) | vp.toLowerCase().contains(list.get(0).toLowerCase()+"'s")  ){
                     List<String> sentiment = calculateSentiment(nlpUtil,vp);
                     updateSentimentMap(list.get(0),sentiment);
                     System.out.println(list.get(0) + " - "+ sentiment);
