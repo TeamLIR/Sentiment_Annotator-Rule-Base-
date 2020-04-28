@@ -608,23 +608,45 @@ public class NLPUtils {
                 output.add(phrase);
             }
 
-            System.out.println(phrase);
 
         }
         return output;
     }
 
-    public String getVP(String sub) {
+    public List<String> getPhrases(String sub) {
+        ArrayList<String> phrases = new ArrayList<>();
         Properties prop = new Properties();
         prop.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
         StanfordCoreNLP pipeline2 = new StanfordCoreNLP(prop);
         Annotation annotation2 = new Annotation(sub);
         pipeline2.annotate(annotation2);
+        String subject = "";
+        List<CoreMap> sentences = annotation2.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            SemanticGraph dependencies = sentence
+                    .get(SemanticGraphCoreAnnotations.EnhancedPlusPlusDependenciesAnnotation.class);
+            for (SemanticGraphEdge edge : dependencies.edgeIterable()) {
+                String relation = edge.getRelation().toString();
+                // nominal subject, passive nominal subject, clausal subject, clausal passive subject
+                // controlling subjects all considered
+                if ("nsubj".equals(relation) || "nsubjpass".equals(relation)) {
+                    subject = edge.getDependent().word().toLowerCase();
+                }
+            }
+        }
+        String np = extractNounPhrase(parseTreeVP(annotation2));
         String vp = extractVerbPhrase(parseTreeVP(annotation2));
+
         vp = vp.replaceAll("\\(", "").replaceAll("\\)", "").
                 replaceAll("[A-Z$]+ ", "").replaceAll(" [\\.]", " ").
                 replaceAll(" [\\,]", "").trim() + ".";
-        return vp;
+        np = np.replaceAll("\\(", "").replaceAll("\\)", "").
+                replaceAll("[A-Z$]+ ", "").replaceAll(" [\\.]", " ").
+                replaceAll(" [\\,]", "").trim() + ".";
+        phrases.add(np);
+        phrases.add(vp);
+        //phrases.add(subject);
+        return phrases;
     }
 
     public static String extractVerbPhrase(Tree tree){
@@ -659,7 +681,50 @@ public class NLPUtils {
 
     }
 
-}
+    public static String extractNounPhrase(Tree tree){
+            List<Tree> subTreeList = tree.subTreeList();
+            for (Tree subTree : subTreeList) {
+                if(subTree.label().value().equals("S")){
+                    String np = "";
+                    String subTree_S = subTree.toString();
+                    ArrayList<Character> openedBracs = new ArrayList<>();
+                    ArrayList<Character> closedBracs = new ArrayList<>();
+                    for (int i =0; i < subTree_S.length(); i++){
+                        char c = subTree_S.charAt(i);
+                        if (Character.valueOf(c).equals('(')){
+                            openedBracs.add(c);
+                        }
+                        if (Character.valueOf(c).equals(')')){
+                            closedBracs.add(c);
+                        }
+                        if (openedBracs.size() == (closedBracs.size()+2) && Character.valueOf(subTree_S.charAt(i)).equals('(') && Character.valueOf(subTree_S.charAt(i+1)).equals('N') && Character.valueOf(subTree_S.charAt(i+2)).equals('P')){
+                            ArrayList<Character> openedBracs1 = new ArrayList<>();
+                            ArrayList<Character> closedBracs1 = new ArrayList<>();
+                            for (int j = i; j < subTree_S.length(); j++) {
+                                np = np+(subTree_S.charAt(j));
+                                if (Character.valueOf(subTree_S.charAt(j)).equals('(')){
+                                    openedBracs1.add(subTree_S.charAt(j));
+                                }
+                                if (Character.valueOf(subTree_S.charAt(j)).equals(')')){
+                                    closedBracs1.add(subTree_S.charAt(j));
+                                }
+                                if (openedBracs1.size() == (closedBracs1.size())){
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    np = np.replaceAll("\\(", "").replaceAll("\\)", "").
+                            replaceAll("[A-Z$]+ ", "").replaceAll(" [\\.]", " ").
+                            replaceAll(" [\\,]", "").trim();
+                    return np;
+                }
+            }
+            return null;
+        }
+    }
+
 
 //         String vp= extractVerbPrase(parseTree(annotation2));
 //         return vp;

@@ -25,48 +25,24 @@ public class SentimentDemo {
 
 
      //   String filePath = "/home/thejan/FYP/LegalDisourseRelationParser/sentence-feature-extractor/";
-      //String filePath = "C:/Users/Asus/Desktop/FYP/Sentiment_Analyser/src/main/resources/";
+        String filePath = "D:/FYP/Sentiment_Analyser/src/main/resources/DeviatedSentimentWords/";
+
 
         try {
             CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_positive_mini.csv",
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_negative_mini.csv",
-                    "E:\\fyp\\SentimentAnalyser\\src\\main\\resources" + "/DeviatedSentimentWords/non_neutral_mini.csv");
-
+                    filePath + "non_positive_mini.csv",
+                    filePath + "non_negative_mini.csv",
+                    filePath + "non_neutral_mini.csv");
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        String sentence= "he was interested with a doing that.";
+        String sentence= "Lee had sold the informant ecstasy and marijuana.";
 
-        System.out.println(calculateSentiment(nlpUtils,sentence));
+        //System.out.println(calculateSentiment(nlpUtils,sentence));
 
         System.out.println(calculateSentimentScore(nlpUtils,sentence));
-    }
-
-    public static String calculateSentiment(NLPUtils nlpUtils, String text){
-        SentimentCostAndGradient.createPosTagMap();
-
-        Annotation ann = nlpUtils.annotate(text);
-
-        //to create the Pos tag map
-        CustomizedSentimentAnnotator.createPosTagMapForSentence(ann);
-
-        //this line is required, after creating POS tag map needs to annotate again
-        ann = nlpUtils.annotate(text);
-
-        List<CoreLabel> words = ann.get(CoreAnnotations.TokensAnnotation.class);
-        for (CoreLabel word : words) {
-            System.out.println(word.toString() + " : " + word.getString(SentimentCoreAnnotations.SentimentClass.class));
-        }
-
-
-        List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
-        for (CoreMap sent : sentences) {
-            return ParseTreeSplitter.SentimentClassification(sent);
-        }
-        return null;
     }
 
     public static List<String> calculateSentimentScore(NLPUtils nlpUtils, String text){
