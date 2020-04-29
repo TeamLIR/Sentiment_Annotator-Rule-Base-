@@ -91,9 +91,14 @@ public class Annotator {
             subSentences.add(input);
         }
         System.out.println(subSentences);
+        List<String> partyList = new ArrayList<>();
+        if (petitioner.trim().length()>0){
+            partyList.addAll(Arrays.asList(petitioner.trim().split(",")));
+        }
+      if (defendant.trim().length()>0){
+          partyList.addAll(Arrays.asList(defendant.trim().split(",")));
+      }
 
-        List<String> partyList = new ArrayList<>(Arrays.asList(petitioner.split(",")));
-        partyList.addAll(Arrays.asList(defendant.split(",")));
 
         for (String sub : subSentences) {
             List<String> phrase_list = nlpUtils.getPhrases(sub); //noun noun phrase and verb phrase
