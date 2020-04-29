@@ -40,7 +40,7 @@ public class Annotator {
 
     public static List<String> calculateSentiment(NLPUtils nlpUtils, String text){
         try {
-            String file_path = "C:/Users/Asus/Desktop/fyp/Sentiment_Annotator-Rule-Base-/src/main/resources/DeviatedSentimentWords/";
+            String file_path = "E:\\fyp\\New folder\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources\\DeviatedSentimentWords\\";
             CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
                     file_path+"non_positive_mini.csv",
                     file_path+"non_negative_mini.csv",
@@ -220,7 +220,7 @@ public class Annotator {
                         neg+=1;
                     }
                 }
-                if (neg>=pos){
+                if (neg>pos){
                     makeOutput1(key,"Negative");
                 }else {
                     makeOutput1(key,"Non-Negative");
@@ -250,7 +250,7 @@ public class Annotator {
                 }
                 //System.out.println("positive:" + pos + ",   negative:" + neg);
                 if (p!=0 && n!=0) {
-                    if (neg % n >= pos % p) {
+                    if (neg % n > pos % p) {
                         makeOutput2(key, "Negative");
                     } else {
                         makeOutput2(key, "Non-Negative");
