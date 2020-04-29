@@ -12,8 +12,14 @@ import utils.NLPUtils;
 
 public class Annotator {
     public static HashMap<String, ArrayList<ArrayList<String>> > sentimentmap = new HashMap<>();
-    public static HashMap<String, String> petList = new HashMap<>();
-    public static HashMap<String, String> defList = new HashMap<>();
+    public static ArrayList<HashMap<String, String>> output1 = new ArrayList<>();
+    public static ArrayList<HashMap<String, String>> output2 = new ArrayList<>();
+
+    public static HashMap<String, String> petList1 = new HashMap<>();
+    public static HashMap<String, String> defList1 = new HashMap<>();
+
+    public static HashMap<String, String> petList2 = new HashMap<>();
+    public static HashMap<String, String> defList2 = new HashMap<>();
     public static String petitioner;
     public static String defendant;
 
@@ -130,25 +136,25 @@ public class Annotator {
                     distinctValues.add(merged.get(i));
                 }
             }
-            System.out.println(distinctValues);
+            //System.out.println(distinctValues);
             if (vp_memberList.size()==0){
 
             }
             if (merged.size()==1){
                 String party = merged.get(0);
-                System.out.println(sub);
+               // System.out.println(sub);
                 List<String> sentiment = calculateSentiment(nlpUtils,sub);
                 updateSentimentMap(party,sentiment);
-                System.out.println(party + " - "+ sentiment);
+               // System.out.println(party + " - "+ sentiment);
             }
 
             else if (merged.size()==2 | distinctValues.size()==2){
                 List<String> sentiment = calculateSentiment(nlpUtils, vp);
                 if (np_memberList.size()==vp_memberList.size()) {
-                    System.out.println(sub);
+                    //System.out.println(sub);
                     if (vp.toLowerCase().contains(vp_memberList.get(0)) | vp.toLowerCase().contains(vp_memberList.get(0).toLowerCase() + " 's")) {
                         updateSentimentMap(vp_memberList.get(0), sentiment);
-                        System.out.println(vp_memberList.get(0) + " - " + sentiment);
+                        //System.out.println(vp_memberList.get(0) + " - " + sentiment);
                         String otherSentiment = "";
 
                         if (sentiment.get(0).equals("Negative")) {
@@ -187,10 +193,21 @@ public class Annotator {
             }
         }
         System.out.println(sentimentmap);
-        preparingOutput(sentimentmap);
+        preparingOutput1(sentimentmap);
+        preparingOutput2(sentimentmap);
+        output2.add(petList2);
+        output2.add(defList2);
+
+        output1.add(petList1);
+        output1.add(defList1);
+
+        System.out.println("output1 using sentiment       :" + output1);
+        System.out.println("output2 using sentiment scores:" + output2);
     }
 
-    private static void preparingOutput(HashMap<String, ArrayList<ArrayList<String>>> sentimentMap) {
+
+
+    private static void preparingOutput1(HashMap<String, ArrayList<ArrayList<String>>> sentimentMap) {
 
         for (String key : sentimentMap.keySet()) {
             int pos = 0;
@@ -204,24 +221,69 @@ public class Annotator {
                     }
                 }
                 if (neg>=pos){
-                    makeOutput(key,"Negative");
+                    makeOutput1(key,"Negative");
                 }else {
-                    makeOutput(key,"Non-Negative");
+                    makeOutput1(key,"Non-Negative");
                 }
             } else {
-                makeOutput(key,sentimentMap.get(key).get(0).get(0));
+                makeOutput1(key,sentimentMap.get(key).get(0).get(0));
             }
         }
-        System.out.println("pet" + petList);
-        System.out.println("def" + defList);
     }
 
-    private static void makeOutput(String party_member, String sentiment) {
+    private static void preparingOutput2(HashMap<String, ArrayList<ArrayList<String>>> sentimentmap) {
+        for (String key : sentimentmap.keySet()) {
+            float pos = 0;
+            float neg = 0;
+            float p=0;
+            float n=0;
+            if (sentimentmap.get(key).size()>1){
+                for (ArrayList<String> value: sentimentmap.get(key)) {
+                    String score = value.get(1);
+                    if (value.get(0).equals("Non-negative")){
+                        pos +=Float.parseFloat(score) ;
+                        p= (float) (p+1.0);
+                    }else {
+                        neg+=Float.parseFloat(score);
+                        n= (float) (n + 1.0);
+                    }
+                }
+                //System.out.println("positive:" + pos + ",   negative:" + neg);
+                if (p!=0 && n!=0) {
+                    if (neg % n >= pos % p) {
+                        makeOutput2(key, "Negative");
+                    } else {
+                        makeOutput2(key, "Non-Negative");
+                    }
+                }else {
+                    if (neg>pos){
+                        makeOutput2(key, "Negative");
+                    } else {
+                        makeOutput2(key, "Non-Negative");
+                    }
+                }
+            } else {
+                makeOutput2(key,sentimentmap.get(key).get(0).get(0));
+            }
+        }
+    }
+
+    private static void makeOutput1(String party_member, String sentiment) {
 
         if (Arrays.asList(petitioner.split(",")).contains(party_member)) {
-            petList.put(party_member, sentiment);
+            petList1.put(party_member, sentiment);
         } else if (Arrays.asList(defendant.split(",")).contains(party_member)) {
-            defList.put(party_member, sentiment);
+            defList1.put(party_member, sentiment);
+        }
+
+    }
+
+    private static void makeOutput2(String party_member, String sentiment) {
+
+        if (Arrays.asList(petitioner.split(",")).contains(party_member)) {
+            petList2.put(party_member, sentiment);
+        } else if (Arrays.asList(defendant.split(",")).contains(party_member)) {
+            defList2.put(party_member, sentiment);
         }
 
     }
