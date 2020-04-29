@@ -1,16 +1,21 @@
 
+
 import java.io.FileNotFoundException;
 import java.util.*;
 
 import com.sun.xml.internal.ws.binding.FeatureListUtil;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCostAndGradient;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
+import org.ejml.simple.SimpleMatrix;
 import utils.NLPUtils;
 
-public class Annotator {
+public class StanfordAnnotator {
     public static HashMap<String, ArrayList<ArrayList<String>> > sentimentmap = new HashMap<>();
     public static ArrayList<HashMap<String, String>> output1 = new ArrayList<>();
     public static ArrayList<HashMap<String, String>> output2 = new ArrayList<>();
@@ -23,7 +28,7 @@ public class Annotator {
     public static String petitioner;
     public static String defendant;
 
-    public static void updateSentimentMap(String party,List<String> sentiment){
+    public static void updateSentimentMap(String party, List<String> sentiment){
         if (sentimentmap.keySet().contains(party)){
             ArrayList<ArrayList<String>> values= sentimentmap.get(party);
             values.add((ArrayList<String>) sentiment);
@@ -38,49 +43,37 @@ public class Annotator {
 
     }
 
-    public static List<String> calculateSentiment(NLPUtils nlpUtils, String text){
-        try {
-            String file_path = "E:\\fyp\\New folder\\Sentiment_Annotator-Rule-Base-\\src\\main\\resources\\DeviatedSentimentWords\\";
-            CustomizedSentimentAnnotator.addSentimentLayerToCoreNLPSentiment(
-                    file_path+"non_positive_mini.csv",
-                    file_path+"non_negative_mini.csv",
-                    file_path+"non_neutral_mini.csv");
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
-        SentimentCostAndGradient.createPosTagMap();
-
+    public static List<String> calculateSentimentScoreOriginalModel (NLPUtils nlpUtils, String text){
         Annotation ann = nlpUtils.annotate(text);
 
-        //to create the Pos tag map
-        CustomizedSentimentAnnotator.createPosTagMapForSentence(ann);
-
-        //this line is required, after creating POS tag map needs to annotate again
-        ann = nlpUtils.annotate(text);
-
         List<CoreMap> sentences = ann.get(CoreAnnotations.SentencesAnnotation.class);
-        for (CoreMap sent : sentences) {
-            return ParseTreeSplitter.getSentimentScore(sent);
-            //return ParseTreeSplitter.SentimentClassification(sent);
+        for(CoreMap sent: sentences){
+            final Tree tree = sent.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+            final SimpleMatrix sm = RNNCoreAnnotations.getPredictions(tree);
+            String sentiment= sent.get(SentimentCoreAnnotations.SentimentClass.class);
+            String[] sentimentList= sm.toString().split("\n");
+            List<String> list=new ArrayList<String>();
+            if (sentiment.equals("Negative") || sentiment.toLowerCase().equals("verynegative")) {
+                list.add(sentiment);
+                list.add(String.valueOf(ParseTreeSplitter.getmax(sentimentList)));
+                return list;
+            }
+
+
+            list.add("Non-negative");
+            list.add(String.valueOf(ParseTreeSplitter.getmax(sentimentList)));
+
+
+            return  list;
+
         }
         return null;
     }
-
-    public static void Annotator(String input1,String petition,String defend) {
-       /* Scanner sc = new Scanner(System.in);  // Create a Scanner object
-
-        System.out.println("Enter String");
-        String input = sc.nextLine();  // Read user input
-
-        System.out.println("Enter Petitioner members");
-        petitioner = sc.nextLine();  // Read user input
-
-        System.out.println("Enter Defendant members");
-        defendant = sc.nextLine();  // Read user input*/
+    public static void stanfordAnnotator(String input1,String petition,String defend) {
         petitioner = petition;
         defendant = defend;
+
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,depparse,sentiment");
 
@@ -96,9 +89,9 @@ public class Annotator {
         if (petitioner.trim().length()>0){
             partyList.addAll(Arrays.asList(petitioner.trim().split(",")));
         }
-      if (defendant.trim().length()>0){
-          partyList.addAll(Arrays.asList(defendant.trim().split(",")));
-      }
+        if (defendant.trim().length()>0){
+            partyList.addAll(Arrays.asList(defendant.trim().split(",")));
+        }
 
 
         for (String sub : subSentences) {
@@ -148,14 +141,14 @@ public class Annotator {
             }
             if (merged.size()==1){
                 String party = merged.get(0);
-               // System.out.println(sub);
-                List<String> sentiment = calculateSentiment(nlpUtils,sub);
+                // System.out.println(sub);
+                List<String> sentiment = calculateSentimentScoreOriginalModel(nlpUtils,sub);
                 updateSentimentMap(party,sentiment);
-               // System.out.println(party + " - "+ sentiment);
+                // System.out.println(party + " - "+ sentiment);
             }
 
             else if (merged.size()==2 | distinctValues.size()==2){
-                List<String> sentiment = calculateSentiment(nlpUtils, vp);
+                List<String> sentiment = calculateSentimentScoreOriginalModel(nlpUtils, vp);
                 if (np_memberList.size()==vp_memberList.size()) {
                     //System.out.println(sub);
                     if (vp.toLowerCase().contains(vp_memberList.get(0)) | vp.toLowerCase().contains(vp_memberList.get(0).toLowerCase() + " 's")) {
@@ -207,8 +200,8 @@ public class Annotator {
         output1.add(petList1);
         output1.add(defList1);
 
-        System.out.println("output1 using sentiment       :" + output1);
-        System.out.println("output2 using sentiment scores:" + output2);
+        System.out.println("stanford-output1 using sentiment       :" + output1);
+        System.out.println("stanford-output2 using sentiment scores:" + output2);
     }
 
 
