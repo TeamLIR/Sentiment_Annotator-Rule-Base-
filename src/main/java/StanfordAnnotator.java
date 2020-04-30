@@ -105,7 +105,7 @@ public class StanfordAnnotator {
                 int sum = 0;
                 List<String> list = new ArrayList<String>();
                 for (String i : partyList) {
-                    String member = i.trim().toLowerCase() + "'s";
+                    String member = i.trim().toLowerCase() + " 's";
                     if (phrase.toLowerCase().contains(i.trim().toLowerCase()) | phrase.toLowerCase().contains(member)) {
                         sum += 1;
                         list.add(i);
